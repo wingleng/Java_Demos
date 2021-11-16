@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--MyBatis配置文件-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mszlu.blog.dao.mapper.ArticleMapper">
+<!--时间戳不能超出10位，所以数据需要除以1000   源博主给出的数据有一些问题-->
+    <select id="listArchives" resultType="com.mszlu.blog.dao.dos.Archives">
+        select year(from_unixtime(create_date/1000)) as year,month(from_unixtime(create_date/1000)) as month,count(*) as count from ms_article
+        group by year,month
+    </select>
+</mapper>
