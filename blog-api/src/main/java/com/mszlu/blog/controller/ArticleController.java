@@ -2,6 +2,7 @@ package com.mszlu.blog.controller;
 
 
 
+import com.mszlu.blog.common.aop.LogAnnotation;
 import com.mszlu.blog.dao.pojo.Article;
 import com.mszlu.blog.service.ArticleService;
 //import com.mszlu.blog.vo.Archive;
@@ -26,6 +27,8 @@ public class ArticleController {
      * @return
      */
     @PostMapping
+    //加上注解，表示对该接口记录日志
+    @LogAnnotation(module = "文章",operation = "获取文章列表")
     public Result listArticle(@RequestBody PageParams pageParams){
 
         return articleService.listArticle(pageParams);
