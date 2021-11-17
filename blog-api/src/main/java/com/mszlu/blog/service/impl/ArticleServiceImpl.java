@@ -3,11 +3,12 @@ package com.mszlu.blog.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mszlu.blog.dao.dos.Archives;
+import com.mszlu.blog.dao.mapper.ArticleBodyMapper;
 import com.mszlu.blog.dao.mapper.ArticleMapper;
 import com.mszlu.blog.dao.pojo.Article;
-import com.mszlu.blog.service.ArticleService;
-import com.mszlu.blog.service.SysUserService;
-import com.mszlu.blog.service.TagService;
+import com.mszlu.blog.dao.pojo.ArticleBody;
+import com.mszlu.blog.service.*;
+import com.mszlu.blog.vo.ArticleBodyVo;
 import com.mszlu.blog.vo.ArticleVo;
 import com.mszlu.blog.vo.Result;
 import com.mszlu.blog.vo.params.PageParams;
@@ -33,6 +34,11 @@ public class ArticleServiceImpl implements ArticleService {
     @Autowired
     private SysUserService sysUserService;
 
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private ThreadService threadService;
     /**
      * 首页返回文章列表
      * @param pageParams
@@ -97,15 +103,36 @@ public class ArticleServiceImpl implements ArticleService {
         return Result.success(archivesList);
     }
 
+    @Override
+    public Result findArticleById(Long articleId) {
+        Article article = this.articleMapper.selectById(articleId);
+        ArticleVo articleVo = copy(article,true,true,true,true);
+
+
+        //这里要添加一个操作，就是查看了文章之后，要更新文章阅读数。
+        //但是更新操作就会上一个写锁，就会导致性能下降
+        //所以这里就作一个操作，将更新操作放到线程池当中执行。。。。。。
+
+        threadService.updateArticleViewCount(articleMapper,article);
+        return Result.success(articleVo);
+    }
+
     private List<ArticleVo> copyList(List<Article> records,boolean isTag,boolean isAuthor) {
         List<ArticleVo> articleVoList = new ArrayList<>();
         for (Article record :records){
-            articleVoList.add(copy(record,isTag,isAuthor));
+            articleVoList.add(copy(record,isTag,isAuthor,false,false));
+        }
+        return articleVoList;
+    }
+    private List<ArticleVo> copyList(List<Article> records,boolean isTag,boolean isAuthor,boolean isBody,boolean isCategory) {
+        List<ArticleVo> articleVoList = new ArrayList<>();
+        for (Article record :records){
+            articleVoList.add(copy(record,isTag,isAuthor,isBody,isCategory));
         }
         return articleVoList;
     }
 
-    private ArticleVo copy(Article article,boolean isTag,boolean isAuthor){
+    private ArticleVo copy(Article article,boolean isTag,boolean isAuthor,boolean isBody,boolean isCategory){
         ArticleVo articleVo = new ArticleVo();
 //        使用BeanUtils中的方法，将属性复制到新的对象当中去
         BeanUtils.copyProperties(article,articleVo);
@@ -119,9 +146,27 @@ public class ArticleServiceImpl implements ArticleService {
         if(isAuthor){
             Long authorId = article.getAuthorId();
             articleVo.setAuthor(sysUserService.findUserById(authorId).getNickname());
+        }if(isBody){
+            Long bodyId = article.getBodyId();
+            articleVo.setBody(findArticleBodyById(bodyId));
+        }if(isCategory){
+            Long categoryId = article.getCategoryId();
+            articleVo.setCategorys(categoryService.findCategoryById(categoryId));
         }
 
         return articleVo;
     }
+
+
+    @Autowired
+    private ArticleBodyMapper articleBodyMapper;
+    private ArticleBodyVo findArticleBodyById(Long bodyId) {
+        ArticleBody articleBody = articleBodyMapper.selectById(bodyId);
+        ArticleBodyVo articleBodyVo = new ArticleBodyVo();
+        articleBodyVo.setContent(articleBody.getContent());
+
+        return articleBodyVo;
+    }
+
 
 }
