@@ -2,17 +2,16 @@ package com.mszlu.blog.controller;
 
 
 
+import com.mszlu.blog.cache.Cache;
 import com.mszlu.blog.common.aop.LogAnnotation;
-import com.mszlu.blog.dao.pojo.Article;
 import com.mszlu.blog.service.ArticleService;
 //import com.mszlu.blog.vo.Archive;
-import com.mszlu.blog.vo.ArticleVo;
 import com.mszlu.blog.vo.Result;
 import com.mszlu.blog.vo.params.ArticleParam;
 import com.mszlu.blog.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.mszlu.blog.service.ArticleService;
+
 //都是进行json数据交互
 @RestController
 @RequestMapping("articles")
@@ -39,6 +38,7 @@ public class ArticleController {
      * @return
      */
     @PostMapping("hot")
+    @Cache(expire = 5 * 60 * 1000,name = "hot_article")
     public Result hotArticle(){
         int limits = 5;
         return articleService.hotArticle(limits);
@@ -50,6 +50,7 @@ public class ArticleController {
      * @return
      */
     @PostMapping("new")
+    @Cache(expire = 5 * 60 * 1000,name = "new_article")
     public Result newArticle(){
         int limits = 5;
         return articleService.newArticle(limits);
