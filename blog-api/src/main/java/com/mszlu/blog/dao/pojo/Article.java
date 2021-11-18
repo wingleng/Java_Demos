@@ -15,6 +15,7 @@ public class Article {
 
     private String summary;
 
+    //commentCounts和viewCounts两个属性和article的类型不一致，导致了最热文章和最新文章的显示错误。
     private Integer commentCounts;
 
     private Integer viewCounts;
