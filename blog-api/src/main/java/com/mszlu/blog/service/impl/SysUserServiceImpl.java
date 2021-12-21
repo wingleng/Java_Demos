@@ -33,6 +33,12 @@ public class SysUserServiceImpl implements SysUserService {
         return sysUser;
     }
 
+    /**
+     * 验证用户名密码是否正确
+     * @param account
+     * @param password
+     * @return
+     */
     @Override
     public SysUser findUser(String account, String password) {
         LambdaQueryWrapper<SysUser> queryWrapper  = new LambdaQueryWrapper<>();

@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @MapperScan("com.mszlu.blog.dao")
 public class MybatisPlusConfig {
 
-
 //配置分页插件
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor(){

@@ -53,15 +53,26 @@ public class LoginServiceImpl implements LoginService {
         if(sysUser == null){
             return Result.fail(ErrorCode.ACCOUNT_PWD_NOT_EXIST.getCode(), ErrorCode.ACCOUNT_PWD_NOT_EXIST.getMsg());
         }
-        //创建token，并且放进redis中
+
+
+        //创建token，并且将当前用户放进redis中。。。。
         String token = JWTUtils.createToken(sysUser.getId());
         redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(sysUser),1, TimeUnit.DAYS);
+
+
 
         //最后登录成功，将token信息返回。
         return Result.success(token);
     }
 
-
+    /**
+     * 使用token来获取当前用户
+     * 1. 首先验证这个token是否有效
+     * 2. 然后再redis中获取token
+     * 3. 返回。
+     * @param token
+     * @return
+     */
 
     @Override
     public SysUser checkToken(String token) {
@@ -69,7 +80,7 @@ public class LoginServiceImpl implements LoginService {
         if(StringUtils.isBlank(token)){
             return null;
         }
-        //2.进行验证
+        //2.进行验证，一些什么验证之类的，但是这里没必要，能够证明
         Map<String,Object> stringObjectMap = JWTUtils.checkToken(token);
         if(stringObjectMap == null){
             return null;
